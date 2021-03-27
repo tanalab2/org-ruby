@@ -1,7 +1,7 @@
-module Orgmode
+require_relative './highlighter.rb'
 
+module Orgmode
   class HtmlOutputBuffer < OutputBuffer
-    require_relative './highlighter.rb'
     HtmlBlockTag = {
       :paragraph        => "p",
       :ordered_list     => "ol",
@@ -30,74 +30,113 @@ module Orgmode
 
     def initialize(output, opts = {})
       super(output)
-      @buffer_tag = "HTML"
       @options = opts
       @new_paragraph = :start
       @footnotes = {}
       @unclosed_tags = []
-      @logger.debug "HTML export options: #{@options.inspect}"
       @custom_blocktags = {} if @options[:markup_file]
-      if @options[:markup_file]
-        do_custom_markup
-      end
+      do_custom_markup if @options[:markup_file]
+    end
+
+    def buffer_tag
+      'HTML'
     end
 
     # Output buffer is entering a new mode. Use this opportunity to
     # write out one of the block tags in the HtmlBlockTag constant to
     # put this information in the HTML stream.
     def push_mode(mode, indent, properties={})
-      @logger.debug "Properties: #{properties}"
       super(mode, indent, properties)
-      if HtmlBlockTag[mode]
-        unless ((mode_is_table?(mode) and skip_tables?) or
-                (mode == :src and !@options[:skip_syntax_highlight]))
-          css_class = case
-                      when (mode == :src and @block_lang.empty?)
-                        " class=\"src\""
-                      when (mode == :src and not @block_lang.empty?)
-                        " class=\"src\" lang=\"#{@block_lang}\""
-                      when (mode == :example || mode == :inline_example)
-                        " class=\"example\""
-                      when mode == :center
-                        " style=\"text-align: center\""
-                      when @options[:decorate_title]
-                        " class=\"title\""
-                      end
-          add_paragraph unless @new_paragraph == :start
-          @new_paragraph = true
+      return unless html_tags.include?(mode)
+      return if skip_css?(mode)
+      css_class = get_css_attr(mode)
+      push_indentation(@new_paragraph != :start)
 
-          @logger.debug "#{mode}: <#{HtmlBlockTag[mode]}#{css_class}>"
-          # Check to see if we need to restart numbering from a
-          # previous interrupted li
-          if mode_is_ol?(mode) && properties.key?(HtmlBlockTag[:list_item])
-            @output << "<#{HtmlBlockTag[mode]} start=#{properties[HtmlBlockTag[:list_item]]}#{css_class}>"
-          else
-            @output << "<#{HtmlBlockTag[mode]}#{css_class}>"
-          end
-          # Entering a new mode obliterates the title decoration
-          @options[:decorate_title] = nil
-        end
+      html_tag = HtmlBlockTag[mode]
+      # Check to see if we need to restart numbering from a
+      # previous interrupted li
+      if restart_numbering?(mode, properties)
+        list_item_tag = HtmlBlockTag[:list_item]
+        start = properties[list_item_tag]
+        @output << "<#{html_tag} start=#{start}#{css_class}>"
+      else
+        @output << "<#{html_tag}#{css_class}>"
       end
+      # Entering a new mode obliterates the title decoration
+      @options[:decorate_title] = nil
+    end
+
+    def restart_numbering?(mode, properties)
+      mode_is_ol?(mode) && properties.key?(HtmlBlockTag[:list_item])
+    end
+
+    def html_tags
+      HtmlBlockTag.keys
+    end
+
+    def skip_css?(mode)
+      (table?(mode) && skip_tables?) ||
+        (src?(mode) && skip_syntax_highlight?)
+    end
+
+    def table?(mode)
+      %i[table table_row table_separator table_header].include?(mode)
+    end
+
+    def src?(mode)
+      %i[src].include?(mode)
+    end
+
+    def skip_syntax_highlight?
+      !options[:skip_syntax_highlight]
+    end
+
+    def push_indentation(condition)
+      indent = "  " * indentation_level
+      condition && @output.concat("\n", indent)
+      @new_paragraph = true
+    end
+
+    def html_tags
+      HtmlBlockTag.keys
+    end
+
+    def skip_css?(mode)
+      (table?(mode) && skip_tables?) ||
+        (src?(mode) && skip_syntax_highlight?)
+    end
+
+    def table?(mode)
+      %i[table table_row table_separator table_header].include?(mode)
+    end
+
+    def src?(mode)
+      %i[src].include?(mode)
+    end
+
+    def skip_syntax_highlight?
+      !options[:skip_syntax_highlight]
+    end
+
+    def push_indentation(condition)
+      indent = "  " * indentation_level
+      condition && @output.concat("\n", indent)
+      @new_paragraph = true
     end
 
     # We are leaving a mode. Close any tags that were opened when
     # entering this mode.
     def pop_mode(mode = nil)
       m = super(mode)
-      if HtmlBlockTag[m]
-        unless ((mode_is_table?(m) and skip_tables?) or
-                (m == :src and !@options[:skip_syntax_highlight]))
-          add_paragraph if @new_paragraph
-          @new_paragraph = true
-          @logger.debug "</#{HtmlBlockTag[m]}>"
-          @output << "</#{HtmlBlockTag[m]}>"
-        end
-      end
+      return @list_indent_stack.pop unless html_tags.include?(m)
+      return @list_indent_stack.pop if skip_css?(m)
+      push_indentation  @new_paragraph
+      @output << "</#{HtmlBlockTag[m]}>"
       @list_indent_stack.pop
     end
 
     def highlight(code, lang)
-      Highlighter.highlight code, lang
+      Highlighter.highlight(code, lang)
     end
 
     def flush!
@@ -204,8 +243,23 @@ module Orgmode
     ######################################################################
     private
 
+    def get_css_attr(mode)
+      case
+      when (mode == :src and block_lang.empty?)
+        " class=\"src\""
+      when (mode == :src and not block_lang.empty?)
+        " class=\"src\" lang=\"#{block_lang}\""
+      when (mode == :example || mode == :inline_example)
+        " class=\"example\""
+      when mode == :center
+        " style=\"text-align: center\""
+      when @options[:decorate_title]
+        " class=\"title\""
+      end
+    end
+
     def skip_tables?
-      @options[:skip_tables]
+      options[:skip_tables]
     end
 
     def mode_is_table?(mode)
