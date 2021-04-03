@@ -9,7 +9,7 @@ module Orgmode
   class OutputBuffer
 
     # This is the overall output buffer
-    attr_reader :output, :mode_stack
+    attr_reader :output, :mode_stack, :list_indent_stack
 
     # This is the current type of output being accumulated.
     attr_accessor :output_type, :headline_number_stack
