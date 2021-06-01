@@ -51,10 +51,11 @@ module Orgmode
     class RougeHighliter
       def self.highlight(buffer, lang)
         require 'rouge'
-        formatter = Rouge::Formatters::HTMLLegacy.new
+        formatter = Rouge::Formatters::HTMLLegacy.new({css_class: 'highlight'})
         lexer = Rouge::Lexer.find_fancy(lang, buffer) ||
                 Rouge::Lexers::PlainText
-        formatter.format(lexer.lex(buffer.strip))
+        attr = "language-#{lang} highlighter-rouge"
+        "<div class='#{attr}'>#{formatter.format(lexer.lex(buffer.strip))}</div>"
       end
     end
   end
