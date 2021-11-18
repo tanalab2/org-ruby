@@ -12,7 +12,8 @@ begin
       end
 
       def prepare
-        @engine = Orgmode::Parser.new(data)
+        parser_options = @options.empty? ? {} : {default_options: @options.dup}
+        @engine = Orgmode::Parser.new(data, parser_options)
         @output = nil
       end
 

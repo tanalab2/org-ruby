@@ -99,8 +99,12 @@ module Orgmode
       @link_abbrevs = { }
       @parser_options = parser_options
 
+      if parser_options.key?(:default_options)
+        @options.merge!(parser_options[:default_options])
+      end
+
       #
-      # Include file feature disabled by default since 
+      # Include file feature disabled by default since
       # it would be dangerous in some environments
       #
       # http://orgmode.org/manual/Include-files.html
