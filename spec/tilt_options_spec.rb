@@ -3,8 +3,8 @@ require 'pathname'
 
 describe Tilt::OrgTemplate do
   describe "Set default options test cases" do
-    def get_file_pair_from_html_examples(basename)
-      data_directory = File.join(File.dirname(__FILE__), "html_examples")
+    def get_file_pair_from_html_examples(basename, data_dir_name="html_examples")
+      data_directory = File.join(File.dirname(__FILE__), data_dir_name)
       file = File.expand_path(File.join(data_directory, basename + ".org"))
       textile_name = File.join(data_directory, basename + ".html")
       textile_name = File.expand_path(textile_name)
@@ -36,7 +36,7 @@ describe Tilt::OrgTemplate do
 
       it "should render with default options" do
         file_with_options, output_with_options = get_file_pair_from_html_examples("footnotes")
-        file_without_options, _ = get_file_pair_from_html_examples("footnotes_without_option")
+        file_without_options, _ = get_file_pair_from_html_examples("footnotes_without_option", "tilt_options_examples")
 
         expect(IO.read(file_with_options)).to include("#+OPTIONS: f:t")
         expect(IO.read(file_without_options)).not_to include("#+OPTIONS: f:t")
