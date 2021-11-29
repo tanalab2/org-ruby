@@ -114,7 +114,7 @@ module Orgmode
         when (current_mode == :src)
           lang = normalize_lang @block_lang
           @buffer = highlight @buffer, lang
-        when (current_mode == :html or current_mode == :raw_text) or (current_mode == :export and @block_lang == "html"))
+        when (current_mode == :html or current_mode == :raw_text or (current_mode == :export and @block_lang == "html"))
           @buffer.gsub!(/\A\n/, "") if @new_paragraph == :start
           @new_paragraph = true
         else
