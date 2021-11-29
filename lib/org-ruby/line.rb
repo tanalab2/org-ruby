@@ -351,7 +351,7 @@ module Orgmode
       when block_type
         if block_should_be_exported?
           case block_type.downcase.to_sym
-          when :center, :comment, :example, :html, :quote, :src
+          when :center, :comment, :example, :html, :quote, :src, :export
             block_type.downcase.to_sym
           else
             :comment

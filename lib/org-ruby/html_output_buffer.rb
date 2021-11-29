@@ -144,7 +144,7 @@ module Orgmode
               @buffer = CodeRay.scan(@buffer, 'text').html(:wrap => nil, :css => :style)
             end
           end
-        when (current_mode == :html or current_mode == :raw_text)
+        when (current_mode == :html or current_mode == :raw_text or (current_mode == :export and @block_lang == "html"))
           @buffer.gsub!(/\A\n/, "") if @new_paragraph == :start
           @new_paragraph = true
         else
@@ -228,7 +228,7 @@ module Orgmode
 
     # Test if we're in an output mode in which whitespace is significant.
     def preserve_whitespace?
-      super or current_mode == :html
+      super or current_mode == :html or (current_mode == :export and @block_lang == "html")
     end
 
     ######################################################################
