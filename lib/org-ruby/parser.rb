@@ -186,7 +186,7 @@ module Orgmode
           end
           table_header_set = false if !line.table?
 
-        when :example, :html, :src
+        when :example, :html, :src, :export
           if previous_line
             set_name_for_code_block(previous_line, line)
             set_mode_for_results_block_contents(previous_line, line)

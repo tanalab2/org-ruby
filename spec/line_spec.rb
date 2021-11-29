@@ -83,13 +83,17 @@ describe Orgmode::Line do
     begin_examples = {
       "#+BEGIN_SRC emacs-lisp -n -r\n" => "SRC",
       "#+BEGIN_EXAMPLE" => "EXAMPLE",
-      "\t#+BEGIN_QUOTE  " => "QUOTE"
+      "\t#+BEGIN_QUOTE  " => "QUOTE",
+      "#+BEGIN_HTML" => "HTML",
+      "#+BEGIN_EXPORT html" => "EXPORT"
     }
 
     end_examples = {
       "#+END_SRC" => "SRC",
       "#+END_EXAMPLE" => "EXAMPLE",
-      "\t#+END_QUOTE  " => "QUOTE"
+      "\t#+END_QUOTE  " => "QUOTE",
+      "#+END_HTML" => "HTML",
+      "#+END_EXPORT" => "EXPORT",
     }
 
     begin_examples.each_key do |str|
