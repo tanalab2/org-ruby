@@ -231,6 +231,34 @@ EXAMPLE
       end
     end
 
+    it "should convert begin_html to raw html" do
+      data_directory = File.join(File.dirname(__FILE__), "html_examples")
+      org_file = File.expand_path(File.join(data_directory, "raw-html.org" ))
+      html_file = File.expand_path(File.join(data_directory, "raw-html.html" ))
+
+      textile_name = File.expand_path(html_file)
+      expected = IO.read(textile_name)
+      expect(expected).to be_kind_of(String)
+      parser = Orgmode::Parser.new(IO.read(org_file), { :allow_include_files => true })
+      actual = parser.to_html
+      expect(actual).to be_kind_of(String)
+      expect(actual).to eq(expected)
+    end
+
+    it "should convert begin_export html to raw html" do
+      data_directory = File.join(File.dirname(__FILE__), "html_examples")
+      org_file = File.expand_path(File.join(data_directory, "export-raw-html.org" ))
+      html_file = File.expand_path(File.join(data_directory, "export-raw-html.html" ))
+
+      textile_name = File.expand_path(html_file)
+      expected = IO.read(textile_name)
+      expect(expected).to be_kind_of(String)
+      parser = Orgmode::Parser.new(IO.read(org_file), { :allow_include_files => true })
+      actual = parser.to_html
+      expect(actual).to be_kind_of(String)
+      expect(actual).to eq(expected)
+    end
+
     it "should not render #+INCLUDE directive when explicitly indicated" do
       data_directory = File.join(File.dirname(__FILE__), "html_examples")
       expected = File.read(File.join(data_directory, "include-file-disabled.html"))
