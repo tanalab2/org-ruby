@@ -185,7 +185,7 @@ module Orgmode
     end
 
     def mode_is_code?(mode)
-      [:example, :src].include? mode
+      [:example, :src, :export].include? mode
     end
 
     def boundary_of_block?(line)

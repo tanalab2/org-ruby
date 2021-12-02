@@ -13,7 +13,7 @@ And this will render some Javascript:
 They behave as follows:
 
 #+begin_export html
-<p style="color:#cafe12; background-color:#999999">
+,*<p style="color:#cafe12; background-color:#999999">
 <pre>
 
 Hello.
